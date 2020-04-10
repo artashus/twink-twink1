@@ -1,0 +1,7 @@
+
+data "terraform_remote_state" "Data_Common" {
+  backend = "local"
+  config = {
+    path = "../common/terraform.tfstate"
+  }
+}

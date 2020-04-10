@@ -1,0 +1,87 @@
+
+locals {
+  Loc_VM1_Name          = "VM1"
+  Loc_VM1_CompName      = "${lower(replace(local.Loc_RGrp_Name, "_", "-"))}-${lower(replace(local.Loc_VM1_Name, "_", "-"))}"
+  Loc_VM1_PrIp          = "10.74.10.11"
+}
+
+resource "azurerm_public_ip" "RGrp_VM1_PbIp" {
+  name                = "${local.Loc_VM1_Name}_Ip"
+  location            = "${azurerm_resource_group.RGrp.location}"
+  resource_group_name = "${azurerm_resource_group.RGrp.name}"
+  allocation_method   = "Static"
+}
+output "RGrp_VM1_PbIp" {
+  value               = "${azurerm_public_ip.RGrp_VM1_PbIp.ip_address}"
+}
+
+resource "azurerm_network_interface" "RGrp_VM1_NetInt" {
+  name                            = "${local.Loc_VM1_Name}_Nic"
+  location                        = "${azurerm_resource_group.RGrp.location}"
+  resource_group_name             = "${azurerm_resource_group.RGrp.name}"
+
+  ip_configuration {
+    name                          = "${local.Loc_VM1_Name}_IPConfig"
+    subnet_id                     = "${azurerm_subnet.RGrp_Net_Sub10.id}"
+    private_ip_address_allocation = "Static"
+    private_ip_address            = "${local.Loc_VM1_PrIp}"
+    public_ip_address_id          = "${azurerm_public_ip.RGrp_VM1_PbIp.id}"
+  }
+}
+
+resource "azurerm_virtual_machine" "RGrp_VM1" {
+  name                  = "${local.Loc_VM1_Name}"
+  location              = "${azurerm_resource_group.RGrp.location}"
+  resource_group_name   = "${azurerm_resource_group.RGrp.name}"
+  network_interface_ids = ["${azurerm_network_interface.RGrp_VM1_NetInt.id}"]
+  vm_size               = "Standard_A2_v2"
+
+  delete_os_disk_on_termination = true
+  delete_data_disks_on_termination = true
+
+  storage_image_reference {
+    publisher = "OpenLogic"
+    offer     = "CentOS"
+    sku       = "7.7"
+    version   = "latest"
+  }
+  storage_os_disk {
+    name              = "${local.Loc_VM1_Name}_Disk"
+    caching           = "ReadWrite"
+    create_option     = "FromImage"
+    managed_disk_type = "Standard_LRS"
+  }
+  os_profile {
+    computer_name  = "${local.Loc_VM1_CompName}"
+    admin_username = "${local.Loc_AdminUser}"
+    admin_password = "${local.Loc_AdminPassword}"
+  }
+ os_profile_linux_config {
+    disable_password_authentication = true
+    ssh_keys {
+      path     = "/home/${local.Loc_AdminUser}/.ssh/authorized_keys"
+      key_data = "${local.Loc_AdminKey}"
+    }
+  }
+}
+
+resource "azurerm_virtual_machine_extension" "RGrp_VM1_Ext" {
+  name                 = "${local.Loc_VM1_Name}_Ext_CustScr"
+  location             = "${azurerm_resource_group.RGrp.location}"
+  resource_group_name  = "${azurerm_resource_group.RGrp.name}"
+  virtual_machine_name = "${azurerm_virtual_machine.RGrp_VM1.name}"
+  publisher            = "Microsoft.Azure.Extensions"
+  type                 = "CustomScript"
+  type_handler_version = "2.0"
+
+  settings = <<POSTINSTALL
+    {
+	    "fileUris": [
+	    "https://${local.Loc_StorAcc_Name}.blob.core.windows.net/scripts/${local.Loc_Random}_ovpn_yu.sh"
+	    ],
+	    "commandToExecute": "sh ${local.Loc_Random}_ovpn_yu.sh"
+
+    }
+POSTINSTALL
+}
+

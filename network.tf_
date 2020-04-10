@@ -1,0 +1,83 @@
+
+locals {
+  Loc_Net               = "10.74.0.0/16"
+  Loc_Sub10             = "10.74.10.0/24"
+  Loc_NetTrust          = ["93.94.220.160/29", "37.252.68.159"]
+}
+
+resource "azurerm_network_security_group" "RGrp_SecGrp" {
+  name                = "Firewall"
+  location            = "${azurerm_resource_group.RGrp.location}"
+  resource_group_name = "${azurerm_resource_group.RGrp.name}"
+
+  security_rule {
+    name                       = "ICMP_ANY"
+    priority                   = 101
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "ICMP"
+    source_port_range          = "*"
+    destination_port_range     = "*"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+    description                = ""
+  }
+  security_rule {
+    name                       = "SSH_ANY"
+    priority                   = 201
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_ranges    = ["2233","2222","22"]
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+  security_rule {
+    name                       = "OVPN_ANY"
+    priority                   = 202
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "2244"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+  security_rule {
+    name                       = "RDP_TRUST"
+    priority                   = 301
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "3389"
+    source_address_prefixes    = "${local.Loc_NetTrust}"
+    destination_address_prefix = "*"
+  }
+}
+
+resource "azurerm_virtual_network" "RGrp_Net" {
+  name                = "Network"
+  location            = "${azurerm_resource_group.RGrp.location}"
+  resource_group_name = "${azurerm_resource_group.RGrp.name}"
+  address_space       = ["${local.Loc_Net}"]
+}
+
+resource "azurerm_subnet" "RGrp_Net_Sub10" {
+  name                      = "Subnet"
+  resource_group_name       = "${azurerm_resource_group.RGrp.name}"
+  virtual_network_name      = "${azurerm_virtual_network.RGrp_Net.name}"
+  address_prefix            = "${local.Loc_Sub10}"
+  network_security_group_id = "${azurerm_network_security_group.RGrp_SecGrp.id}"
+}
+
+resource "azurerm_subnet_network_security_group_association" "RGrp_Net_Sub10Ass" {
+  subnet_id                 = "${azurerm_subnet.RGrp_Net_Sub10.id}"
+  network_security_group_id = "${azurerm_network_security_group.RGrp_SecGrp.id}"
+}
+
+
+
+
+

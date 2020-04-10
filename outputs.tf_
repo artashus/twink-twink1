@@ -1,0 +1,6 @@
+
+
+output "Out_Common_Info" {
+  value                 = "${local.Loc_Common}"
+}
+
