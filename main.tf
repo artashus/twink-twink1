@@ -7,7 +7,7 @@ provider "azurerm" {
   features {}
 }
 
-resource "azurerm_resource_group" "main" {
+resource "azurerm_resource_group" "mainrg" {
   name     = local.rsgrp_name
   location = local.rsgrp_location
 }
