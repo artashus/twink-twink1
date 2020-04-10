@@ -1,7 +1,7 @@
 locals {
+  location            = "westeurope"
+  resource_group_name = "twink1"
 
-  rsgrp_name = "twink1"
-  rsgrp_location = "westeurope"
   # Loc_Common            = "${data.terraform_remote_state.Data_Common.outputs.Out_Common}"
   # Loc_Random            = "${local.Loc_Common["Loc_Random"]}"
   # Loc_AdminUser         = "${local.Loc_Common["Loc_AdminUser"]}"

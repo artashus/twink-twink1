@@ -3,12 +3,12 @@ terraform {
 }
 
 provider "azurerm" {
-  version         = "~> 2.5"
+  version = "~> 2.5"
   features {}
 }
 
-resource "azurerm_resource_group" "mainrg" {
-  name     = local.rsgrp_name
-  location = local.rsgrp_location
+resource "azurerm_resource_group" "main" {
+  name     = local.resource_group_name
+  location = local.location
 }
 

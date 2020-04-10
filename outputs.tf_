@@ -1,6 +1,0 @@
-
-
-output "common_info" {
-  value                 = "${local.Loc_Common}"
-}
-

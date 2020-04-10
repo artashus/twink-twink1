@@ -1,35 +1,32 @@
-resource "azurerm_public_ip" "vm1_pip1" {
-  name                = "vm1_pip1"
-  location            = azurerm_resource_group.mainrg.location
-  resource_group_name = azurerm_resource_group.mainrg.name
+resource "azurerm_public_ip" "vm1" {
+  name                = "vm1"
+  location            = azurerm_resource_group.main.location
+  resource_group_name = azurerm_resource_group.main.name
   allocation_method   = "Static"
-}
-output "vm1_pip1" {
-  value               = azurerm_public_ip.vm1_pip1.ip_address
 }
 
 resource "azurerm_network_interface" "vm1_nic1" {
-  name                            = "vm1_nic1"
-  location                        = azurerm_resource_group.mainrg.location
-  resource_group_name             = azurerm_resource_group.mainrg.name
+  name                = "vm1_nic1"
+  location            = azurerm_resource_group.main.location
+  resource_group_name = azurerm_resource_group.main.name
 
   ip_configuration {
     name                          = "vm1_lip1"
-    subnet_id                     = azurerm_subnet.servernet.id
+    subnet_id                     = azurerm_subnet.servers.id
     private_ip_address_allocation = "Static"
     private_ip_address            = "10.81.10.11"
-    public_ip_address_id          = azurerm_public_ip.vm1_pip1.id
+    public_ip_address_id          = azurerm_public_ip.vm1.id
   }
 }
 
 resource "azurerm_virtual_machine" "vm1" {
   name                  = "vm1"
-  location              = azurerm_resource_group.mainrg.location
-  resource_group_name   = azurerm_resource_group.mainrg.name
+  location              = azurerm_resource_group.main.location
+  resource_group_name   = azurerm_resource_group.main.name
   network_interface_ids = [azurerm_network_interface.vm1_nic1.id]
-  vm_size               = "Standard_A2_v2"
+  vm_size               = "Basic_A0"
 
-  delete_os_disk_on_termination = true
+  delete_os_disk_on_termination    = true
   delete_data_disks_on_termination = true
 
   storage_image_reference {
@@ -48,7 +45,7 @@ resource "azurerm_virtual_machine" "vm1" {
     computer_name  = "twink1-vm1"
     admin_username = "twinkadmin"
   }
- os_profile_linux_config {
+  os_profile_linux_config {
     disable_password_authentication = true
     ssh_keys {
       path     = "/home/twinkadmin/.ssh/authorized_keys"
