@@ -1,9 +1,3 @@
-
-locals {
-  loc_rgrp_name     = "Twink1"
-  loc_rgrp_location = "westeurope"
-}
-
 terraform {
   required_version = "=0.12.24"
 }
@@ -13,9 +7,9 @@ provider "azurerm" {
   features {}
 }
 
-
-resource "azurerm_resource_group" "rgrp" {
-  name     = local.loc_rgrp_name
-  location = local.loc_rgrp_location
+resource "azurerm_resource_group" "main" {
+  name     = local.rsgrp_name
+  location = local.rsgrp_location
 }
+
 
