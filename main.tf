@@ -12,4 +12,3 @@ resource "azurerm_resource_group" "main" {
   location = local.rsgrp_location
 }
 
-
